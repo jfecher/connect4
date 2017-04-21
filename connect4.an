@@ -1,0 +1,225 @@
+
+//red and yellow foreground colors for test
+let red_fg = "\033[0;31m"
+let yellow_fg = "\033[0;33m"
+
+//red and yellow background colors for chips
+let global red_bg = "\033[0;41m"
+let global yellow_bg = "\033[0;43m"
+
+//reset console to its normal colors
+let global clear = "\033[0;0m"
+
+//String for red and yellow player
+let global red_p = red_fg ++ "Red" ++ clear
+let global yellow_p = yellow_fg ++ "Yellow" ++ clear
+
+
+// 7x6 array representing the board
+global var board = [[' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                    [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                    [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                    [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                    [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                    [' ', ' ', ' ', ' ', ' ', ' ', ' ']]
+
+
+/* An artist's depiction of a row
+____________________________________________________________________________________________
+|    OOOO    |            |            |            |            |            |            |
+|  OOOOOOOO  |            |            |            |            |            |            |
+|OOOOOOOOOOOO|            |            |            |            |            |            |
+|OOOOOOOOOOOO|            |            |            |            |            |            |
+|  OOOOOOOO  |            |            |            |            |            |            |
+|    OOOO    |            |            |            |            |            |            |
+============================================================================================
+*/
+fun draw_row: [7 c8] row, i32 i
+    global clear
+    printne "|"
+    for j in 0..6 do
+        let p = row#j
+        draw_slot p i
+
+        printf "%s|" clear
+    print ""
+
+
+fun draw_slot: c8 color, i32 i
+    global red_bg yellow_bg clear
+
+    let bg =
+        if color == 'r' then red_bg.cStr
+        elif color == 'y' then yellow_bg.cStr
+        else clear.cStr
+
+    if i == 1 or i == 6 then
+        printf "    %s    %s    " bg clear
+    elif i == 2 or i == 5 then
+        printf "  %s        %s  " bg clear
+    elif i == 3 or i == 4 then
+        printf "%s            %s" bg clear
+    else
+        printf "Unknown i: %d\n" i
+    
+
+
+/*
+ * Draws the game board
+ */
+fun draw: [6 [7 c8]] b
+    system "clear"
+
+    print "____________________________________________________________________________________________"
+    for i in 5..0 do
+        draw_row(b#i) 1
+        draw_row(b#i) 2
+        draw_row(b#i) 3
+        draw_row(b#i) 4
+        draw_row(b#i) 5
+        draw_row(b#i) 6
+        print "============================================================================================"
+    
+    print "=   col 1    =   col 2    =   col 3    =   col 4    =   col 5    =   col 6    =   col 7    ="
+    print "============================================================================================"
+
+
+/*
+ * Returns true if a character is numeric
+ */
+fun is_numeric: c8 c =
+    c >= '0' and c <= '9'
+
+
+/*
+ * Inserts a chip into the given column
+ * Returns false if column is completely filled
+ */
+fun insert_chip: c8 turn, u8 col -> bool
+    global board
+    for row in 0..5 do
+        if board#row#col == ' ' then
+            board#row#col = turn
+            return true
+
+    return false
+
+
+/*
+ * Returns true if the given input is a valid column index
+ */
+fun is_valid_col: Str s -> bool
+    s.len == 1 and
+    is_numeric(s#0) and
+    s#0 >= '1' and
+    s#0 <= '7'
+
+
+/*
+ * Calls for player input repeatedly until correct input is entered.
+ * When it is, the board is modified accordingly
+ */
+fun handle_player_input: c8 turn
+    global board
+    let inp = input "Enter column number for your chip: "
+    if not is_valid_col inp then
+        print "Please enter a valid column number!\n"
+        return handle_player_input turn
+
+    //convert the 1-indexed ascii number to a 0-indexed normal number
+    if not insert_chip turn (inp#0 - '1') then
+        handle_player_input turn
+
+
+/*
+ *checks a line of 4 in the direction specified by r_off and c_off
+ */
+fun check_line: i32 row col r_off c_off -> bool
+    global board
+    let row_final = row + r_off*3
+    let col_final = col + c_off*3
+    if r_off == 0 and c_off == 0 then
+        return false
+
+    if row_final >= 0 and row_final <= 5 and col_final >= 0 and col_final <= 6 then
+        let c = board#row#col
+        
+        c == board#(row + r_off)#(col + c_off) and
+        c == board#(row + r_off*2)#(col + c_off*2) and
+        c == board#(row + r_off*3)#(col + c_off*3)
+    else
+        false
+
+
+
+fun check_pos: i32 row col -> bool
+    global board
+    let c = board#row#col
+
+    if c == ' ' then return false
+
+    for i in -1..1 do
+        for j in -1..1 do
+            if check_line row col i j then
+                return true
+    
+    false
+
+
+
+
+fun check_for_winner: [6[7 c8]] board -> bool
+    global red_p yellow_p
+    for i in 0..5 do
+        for j in 0..6 do
+            if check_pos i j then
+                print <| (if board#i#j == 'r' then red_p else yellow_p) ++ " Player Wins!"
+                let inp = input "Play again? (y/N)\n"
+
+                if inp == "y" then return true
+                else exit 0
+
+    false
+
+
+fun check_for_tie: [6[7 c8]] board -> bool
+    for i in 0..5 do
+        for j in 0..6 do
+            if board#i#j == ' ' then
+                return false
+
+    let inp = input "Tie game!\nPlay again? (y/N)\n"
+    if inp == "y" then return true
+    else exit 0
+
+
+fun wipe: mut [6 [7 c8]] board
+    board = [[' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ']]
+    
+
+
+
+//the main game loop
+var turn = 'r'
+while true do
+    draw board
+
+    if check_for_winner board or check_for_tie board then
+        wipe board
+        turn = 'r'
+        draw board
+
+    if turn == 'r' then
+        print <| red_p ++ " player's turn"
+    elif turn == 'y' then
+        print <| yellow_p ++ " player's turn"
+
+    handle_player_input turn
+    turn = if turn == 'r' then 'y' else 'r'
+
+
