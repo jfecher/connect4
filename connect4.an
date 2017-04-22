@@ -141,9 +141,9 @@ fun check_line: i32 row col r_off c_off -> bool
     if r_off == 0 and c_off == 0 then
         return false
 
-    if row_final >= 0 and row_final <= 5 and col_final >= 0 and col_final <= 6 then
+    if row_final in 0..5 and col_final in 0..6 then
         let c = board#row#col
-        
+
         c == board#(row + r_off)#(col + c_off) and
         c == board#(row + r_off*2)#(col + c_off*2) and
         c == board#(row + r_off*3)#(col + c_off*3)
