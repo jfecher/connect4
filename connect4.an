@@ -72,12 +72,9 @@ fun draw: [6 [7 c8]] b
 
     print "____________________________________________________________________________________________"
     for i in 5..0 do
-        draw_row(b#i) 1
-        draw_row(b#i) 2
-        draw_row(b#i) 3
-        draw_row(b#i) 4
-        draw_row(b#i) 5
-        draw_row(b#i) 6
+        for j in 1..6 do
+            draw_row(b#i) j
+
         print "============================================================================================"
     
     print "=   col 1    =   col 2    =   col 3    =   col 4    =   col 5    =   col 6    =   col 7    ="
@@ -215,9 +212,9 @@ while true do
         draw board
 
     if turn == 'r' then
-        print <| red_p ++ " player's turn"
+        print "${red_p} player's turn"
     elif turn == 'y' then
-        print <| yellow_p ++ " player's turn"
+        print "${yellow_p} player's turn"
 
     handle_player_input turn
     turn = if turn == 'r' then 'y' else 'r'
