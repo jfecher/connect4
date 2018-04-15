@@ -37,7 +37,7 @@ ________________________________________________________________________________
 fun draw_row: [7 c8] row, i32 i
     global clear
     printne "|"
-    for j in 0..6 do
+    for j in 0..7 do
         let p = row#j
         draw_slot p i
 
@@ -61,7 +61,7 @@ fun draw_slot: c8 color, i32 i
         printf "%s            %s" bg clear
     else
         printf "Unknown i: %d\n" i
-    
+
 
 
 /*
@@ -71,12 +71,12 @@ fun draw: [6 [7 c8]] b
     system "clear"
 
     print "____________________________________________________________________________________________"
-    for i in 5..0 do
-        for j in 1..6 do
-            draw_row(b#i) j
+    for i in 0..6 do
+        for j in 1..7 do
+            draw_row(b#(5-i)) j
 
         print "============================================================================================"
-    
+
     print "=   col 1    =   col 2    =   col 3    =   col 4    =   col 5    =   col 6    =   col 7    ="
     print "============================================================================================"
 
@@ -94,12 +94,12 @@ fun is_numeric: c8 c =
  */
 fun insert_chip: c8 turn, u8 col -> bool
     global board
-    for row in 0..5 do
+    for row in 0..6 do
         if board#row#col == ' ' then
             board#row#col = turn
             return true
 
-    return false
+    false
 
 
 /*
@@ -124,7 +124,7 @@ fun handle_player_input: c8 turn
         return handle_player_input turn
 
     //convert the 1-indexed ascii number to a 0-indexed normal number
-    if not insert_chip turn (inp#0 - '1') then
+    if not insert_chip turn (u8 (inp#0 - '1')) then
         handle_player_input turn
 
 
@@ -138,7 +138,7 @@ fun check_line: i32 row col r_off c_off -> bool
     if r_off == 0 and c_off == 0 then
         return false
 
-    if row_final in 0..5 and col_final in 0..6 then
+    if row_final in 0..6 and col_final in 0..7 then
         let c = board#row#col
 
         c == board#(row + r_off)#(col + c_off) and
@@ -148,29 +148,26 @@ fun check_line: i32 row col r_off c_off -> bool
         false
 
 
-
 fun check_pos: i32 row col -> bool
     global board
     let c = board#row#col
 
     if c == ' ' then return false
 
-    for i in -1..1 do
-        for j in -1..1 do
+    for i in -1..2 do
+        for j in -1..2 do
             if check_line row col i j then
                 return true
-    
+
     false
 
 
-
-
-fun check_for_winner: [6[7 c8]] board -> bool
+fun check_for_winner: mut [6 [7 c8]] board -> bool
     global red_p yellow_p
-    for i in 0..5 do
-        for j in 0..6 do
+    for i in 0..6 do
+        for j in 0..7 do
             if check_pos i j then
-                print <| (if board#i#j == 'r' then red_p else yellow_p) ++ " Player Wins!"
+                print "${if board#i#j == 'r' then red_p else yellow_p} Player Wins!"
                 let inp = input "Play again? (y/N)\n"
 
                 if inp == "y" then return true
@@ -180,8 +177,8 @@ fun check_for_winner: [6[7 c8]] board -> bool
 
 
 fun check_for_tie: [6[7 c8]] board -> bool
-    for i in 0..5 do
-        for j in 0..6 do
+    for i in 0..6 do
+        for j in 0..7 do
             if board#i#j == ' ' then
                 return false
 
@@ -197,7 +194,6 @@ fun wipe: mut [6 [7 c8]] board
              [' ', ' ', ' ', ' ', ' ', ' ', ' '],
              [' ', ' ', ' ', ' ', ' ', ' ', ' '],
              [' ', ' ', ' ', ' ', ' ', ' ', ' ']]
-    
 
 
 
