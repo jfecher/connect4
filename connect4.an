@@ -4,19 +4,19 @@ let red_fg = "\033[0;31m"
 let yellow_fg = "\033[0;33m"
 
 //red and yellow background colors for chips
-let global red_bg = "\033[0;41m"
-let global yellow_bg = "\033[0;43m"
+global red_bg = "\033[0;41m"
+global yellow_bg = "\033[0;43m"
 
 //reset console to its normal colors
-let global clear = "\033[0;0m"
+global clear = "\033[0;0m"
 
 //String for red and yellow player
-let global red_p = red_fg ++ "Red" ++ clear
-let global yellow_p = yellow_fg ++ "Yellow" ++ clear
+global red_p = red_fg ++ "Red" ++ clear
+global yellow_p = yellow_fg ++ "Yellow" ++ clear
 
 
 // 7x6 array representing the board
-global var board = [[' ', ' ', ' ', ' ', ' ', ' ', ' '],
+mut global board = [[' ', ' ', ' ', ' ', ' ', ' ', ' '],
                     [' ', ' ', ' ', ' ', ' ', ' ', ' '],
                     [' ', ' ', ' ', ' ', ' ', ' ', ' '],
                     [' ', ' ', ' ', ' ', ' ', ' ', ' '],
@@ -35,7 +35,6 @@ ________________________________________________________________________________
 ============================================================================================
 */
 fun draw_row: [7 c8] row, i32 i
-    global clear
     printne "|"
     for j in 0..7 do
         let p = row#j
@@ -46,8 +45,6 @@ fun draw_row: [7 c8] row, i32 i
 
 
 fun draw_slot: c8 color, i32 i
-    global red_bg yellow_bg clear
-
     let bg =
         if color == 'r' then red_bg.cStr
         elif color == 'y' then yellow_bg.cStr
@@ -93,7 +90,6 @@ fun is_numeric: c8 c =
  * Returns false if column is completely filled
  */
 fun insert_chip: c8 turn, u8 col -> bool
-    global board
     for row in 0..6 do
         if board#row#col == ' ' then
             board#row#col = turn
@@ -117,7 +113,6 @@ fun is_valid_col: Str s -> bool
  * When it is, the board is modified accordingly
  */
 fun handle_player_input: c8 turn
-    global board
     let inp = input "Enter column number for your chip: "
     if not is_valid_col inp then
         print "Please enter a valid column number!\n"
@@ -132,7 +127,6 @@ fun handle_player_input: c8 turn
  *checks a line of 4 in the direction specified by r_off and c_off
  */
 fun check_line: i32 row col r_off c_off -> bool
-    global board
     let row_final = row + r_off*3
     let col_final = col + c_off*3
     if r_off == 0 and c_off == 0 then
@@ -149,7 +143,6 @@ fun check_line: i32 row col r_off c_off -> bool
 
 
 fun check_pos: i32 row col -> bool
-    global board
     let c = board#row#col
 
     if c == ' ' then return false
@@ -163,7 +156,6 @@ fun check_pos: i32 row col -> bool
 
 
 fun check_for_winner: mut [6 [7 c8]] board -> bool
-    global red_p yellow_p
     for i in 0..6 do
         for j in 0..7 do
             if check_pos i j then
@@ -198,7 +190,7 @@ fun wipe: mut [6 [7 c8]] board
 
 
 //the main game loop
-var turn = 'r'
+mut turn = 'r'
 while true do
     draw board
 
